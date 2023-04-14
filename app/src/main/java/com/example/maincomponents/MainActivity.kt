@@ -18,6 +18,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 
 
@@ -26,6 +28,8 @@ class MainActivity : AppCompatActivity() {
     private val REQUEST_READ_CONTACTS: Int = 1231
     var mobileArray = mutableListOf<String>()
     var numberArray = mutableListOf<String>()
+    private val rvContacts: RecyclerView
+   get() = findViewById<RecyclerView>(R.id.rvContacts)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +46,7 @@ class MainActivity : AppCompatActivity() {
 
         //Initialize Service
         val button = findViewById<Button>(R.id.btnMusicPlayer)
+
         button.setOnClickListener {
 //            loadContacts()
             if (isMyServiceRunning(MainService::class.java)) {
@@ -67,12 +72,23 @@ class MainActivity : AppCompatActivity() {
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             val contacts = getContactList(this)
+            loadRvContacts(contacts)
             Log.d("Contacts", contacts.joinToString(separator = "\n"))
 //            Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
         } else {
             requestContactsPermission();
             Toast.makeText(this, "Permission!", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun loadRvContacts(contacts: List<MainActivity.Contact>) {
+        val contactsAdapter = ContactsAdapter(contacts)
+        rvContacts?.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = contactsAdapter
+        }
+
+
     }
 
     private fun requestContactsPermission() {
