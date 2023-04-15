@@ -13,7 +13,9 @@ import android.icu.lang.UCharacter.GraphemeClusterBreak.L
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.util.Log
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -27,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     var mobileArray = mutableListOf<String>()
     var numberArray = mutableListOf<String>()
 
+    @SuppressLint("WrongViewCast", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -42,6 +45,9 @@ class MainActivity : AppCompatActivity() {
 
         //Initialize Service
         val button = findViewById<Button>(R.id.btnMusicPlayer)
+        val listView1=findViewById<ListView>(R.id.itemName)
+        val listView2=findViewById<ListView>(R.id.itemPhone)
+
         button.setOnClickListener {
 //            loadContacts()
             if (isMyServiceRunning(MainService::class.java)) {
@@ -67,6 +73,10 @@ class MainActivity : AppCompatActivity() {
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             val contacts = getContactList(this)
+            val listView=findViewById<ListView>(R.id.lvContacts)
+            //val items= listOf("Item1","Item2")
+            val adapter = ContactAdapter(this, contacts)
+            listView.adapter = adapter
             Log.d("Contacts", contacts.joinToString(separator = "\n"))
 //            Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
         } else {
