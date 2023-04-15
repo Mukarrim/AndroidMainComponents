@@ -18,10 +18,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.maincomponents.data.ContactData
+import com.example.maincomponents.databinding.ActivityMainBinding
+import com.example.maincomponents.list.ContactAdapter
 import com.google.android.material.snackbar.Snackbar
 
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
 
     private val REQUEST_READ_CONTACTS: Int = 1231
     var mobileArray = mutableListOf<String>()
@@ -29,7 +33,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        //setContentView(R.layout.activity_main)
 
         //Initialize Broadcast
         val filter = IntentFilter()
@@ -43,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         //Initialize Service
         val button = findViewById<Button>(R.id.btnMusicPlayer)
         button.setOnClickListener {
-          loadContacts()
+//            loadContacts()
             if (isMyServiceRunning(MainService::class.java)) {
                 button.text = getString(R.string.stopped)
                 stopService(Intent(this@MainActivity, MainService::class.java))
@@ -55,20 +61,29 @@ class MainActivity : AppCompatActivity() {
 
 
         //Initialize Content Providers
-        loadContacts()
+        checkContactPermission()
 
 
     }
 
     private fun loadContacts() {
+
+        val contacts = getContactList(this)
+        Log.d("Contacts", contacts.joinToString(separator = "\n"))
+        Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
+        //val contactsAdapter:ContactAdapter= ContactAdapter(this, contactList=contacts)
+        val contactsAdapter:ContactAdapter=ContactAdapter(this, contacts)
+        //binding.lvContacts.adapter=contactsAdapter
+        binding.lvContacts.adapter=contactsAdapter
+    }
+
+    private fun checkContactPermission() {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.READ_CONTACTS
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            val contacts = getContactList(this)
-            Log.d("Contacts", contacts.joinToString(separator = "\n"))
-//            Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
+            loadContacts()
         } else {
             requestContactsPermission();
             Toast.makeText(this, "Permission!", Toast.LENGTH_SHORT).show()
@@ -83,9 +98,7 @@ class MainActivity : AppCompatActivity() {
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             // Permission has already been granted, do something with the contact list
-            val contacts = getContactList(this)
-            Log.d("Contacts", contacts.joinToString(separator = "\n"))
-            Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
+            loadContacts()
             // Do something with the contact list
         } else {
             // Permission has not been granted, request it
@@ -127,9 +140,7 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_READ_CONTACTS && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             // Permission has been granted, do something with the contact list
-            val contacts = getContactList(this)
-            Log.d("Contacts", contacts.joinToString(separator = "\n"))
-            Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
+            loadContacts()
             // Do something with the contact list
         } else {
             // Permission has been denied
@@ -138,8 +149,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     @SuppressLint("Range")
-    fun getContactList(context: Context): List<Contact> {
-        val contacts = mutableListOf<Contact>()
+    fun getContactList(context: Context): List<ContactData> {
+        val contacts = mutableListOf<ContactData>()
         val contentResolver = context.contentResolver
         val cursor = contentResolver.query(
             ContactsContract.Contacts.CONTENT_URI,
@@ -163,13 +174,13 @@ class MainActivity : AppCompatActivity() {
                         while (pc.moveToNext()) {
                             val phoneNumber =
                                 pc.getString(pc.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
-                            val contact = Contact(name, phoneNumber)
+                            val contact = ContactData(name, phoneNumber)
                             contacts.add(contact)
                         }
                     }
                     phoneCursor?.close()
                 } else {
-                    val contact = Contact(name, null)
+                    val contact = ContactData(name,"")
                     contacts.add(contact)
                 }
             }
@@ -178,7 +189,7 @@ class MainActivity : AppCompatActivity() {
         return contacts
     }
 
-    data class Contact(val name: String, val phoneNumber: String?)
+
 
 
     private fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
