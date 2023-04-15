@@ -12,18 +12,22 @@ import android.database.Cursor
 import android.icu.lang.UCharacter.GraphemeClusterBreak.L
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.provider.ContactsContract.Contacts
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 
 
 class MainActivity : AppCompatActivity() {
 
     private val REQUEST_READ_CONTACTS: Int = 1231
+    private lateinit var rvContacts: RecyclerView
     var mobileArray = mutableListOf<String>()
     var numberArray = mutableListOf<String>()
 
@@ -40,6 +44,8 @@ class MainActivity : AppCompatActivity() {
         sendBroadcast(intent)
 
 
+        rvContacts = findViewById(R.id.rvContacts)
+
         //Initialize Service
         val button = findViewById<Button>(R.id.btnMusicPlayer)
         button.setOnClickListener {
@@ -54,21 +60,23 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        //Initialize Content Providers
-        loadContacts()
-
-
+        val contacts = getContactList(this)
+        loadContacts(contacts)
     }
 
-    private fun loadContacts() {
+
+    private fun loadContacts(contacts: List<MainActivity.Contact>)  {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.READ_CONTACTS
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            val contacts = getContactList(this)
+            val contactsAdapter = ContactsAdapter(contacts)
+        rvContacts?.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = contactsAdapter
+        }
             Log.d("Contacts", contacts.joinToString(separator = "\n"))
-//            Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
         } else {
             requestContactsPermission();
             Toast.makeText(this, "Permission!", Toast.LENGTH_SHORT).show()
