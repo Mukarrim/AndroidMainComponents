@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         //Initialize Service
         val button = findViewById<Button>(R.id.btnMusicPlayer)
         button.setOnClickListener {
-//            loadContacts()
+          loadContacts()
             if (isMyServiceRunning(MainService::class.java)) {
                 button.text = getString(R.string.stopped)
                 stopService(Intent(this@MainActivity, MainService::class.java))
