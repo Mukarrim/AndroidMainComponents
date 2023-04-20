@@ -31,6 +31,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        Toast.makeText(this, "TADA! New feature done!", Toast.LENGTH_SHORT).show()
+
         //Initialize Broadcast
         val filter = IntentFilter()
         filter.addAction("com.example.maincomponents.MainBroadcastReceiver")
